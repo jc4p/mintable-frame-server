@@ -1,0 +1,12 @@
+{
+  "name": "nft-metadata-server",
+  "module": "index.js",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "elysia": "^1.2.25"
+  },
+  "scripts": {
+    "start": "bun run server.js"
+  }
+}
