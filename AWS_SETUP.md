@@ -66,9 +66,101 @@ cd mintable-frame-server
 bun install
 ```
 
+### Customize NFT Metadata
+
+Before deploying, you should customize the NFT metadata to match your own collection:
+
+1. Edit the `server.js` file:
+
+```bash
+nano ~/apps/mintable-frame-server/server.js
+```
+
+2. Find the `generateNftMetadata` function (around line 6) and update it with your own values:
+
+```javascript
+const generateNftMetadata = (tokenId) => {
+  return {
+    // Change this to your NFT's name format
+    name: `Your NFT Name #${tokenId}`,
+    
+    // Update with your collection's description 
+    description: "Description of your amazing NFT collection",
+    
+    // IMPORTANT: Replace with the URL to your own image
+    // Must be a publicly accessible URL
+    image: "https://your-domain.com/path/to/your/image.jpg",
+    
+    // Customize attributes for your NFTs
+    attributes: [
+      {
+        trait_type: "Collection",
+        value: "Your Collection Name"
+      },
+      {
+        trait_type: "Token ID",
+        value: tokenId.toString()
+      },
+      // Add additional attributes as needed
+      {
+        trait_type: "Rarity",
+        value: "Common"
+      }
+    ]
+  };
+};
+```
+
+#### Image Hosting Options
+
+For the `image` URL, you'll need to host your NFT image somewhere publicly accessible:
+
+#### Updating the Root Route
+
+Don't forget to also update the root route information to match your NFT collection name:
+
+```javascript
+// Find this section in server.js (around line 30)
+app.get('/', () => {
+  return {
+    name: "NFT Metadata API",
+    description: "API for Your Collection Name NFT metadata", // Update this line
+    endpoints: {
+      tokens: "/tokens/{tokenId}"
+    }
+  };
+});
+```
+
+1. **AWS S3 (recommended for this setup)**:
+   ```bash
+   # Install AWS CLI
+   curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+   unzip awscliv2.zip
+   sudo ./aws/install
+   
+   # Configure AWS CLI with your credentials
+   aws configure
+   
+   # Create an S3 bucket (replace bucket-name with your preferred name)
+   aws s3 mb s3://your-nft-images-bucket
+   
+   # Upload your image (replace with your actual image path and name)
+   aws s3 cp your-image.jpg s3://your-nft-images-bucket/
+   
+   # Make the object public
+   aws s3api put-object-acl --bucket your-nft-images-bucket --key your-image.jpg --acl public-read
+   
+   # Your image URL will be:
+   # https://your-nft-images-bucket.s3.amazonaws.com/your-image.jpg
+   ```
+
+2. **Use a dedicated image hosting service** like Imgur, Cloudinary, or IPFS
+3. **Host on your own server** alongside this metadata server
+
 ### Test the Application Manually
 
-Before setting up systemd, let's verify the application works:
+After customizing your metadata, verify the application works:
 
 ```bash
 # Start the server in the foreground
@@ -116,9 +208,10 @@ WantedBy=multi-user.target
 EOF
 ```
 
-Enable and start the service:
+Reload systemd to recognize the new service file, then enable and start the service:
 
 ```bash
+sudo systemctl daemon-reload
 sudo systemctl enable mintable-frame
 sudo systemctl start mintable-frame
 ```
@@ -195,9 +288,10 @@ Test the Nginx configuration:
 sudo nginx -t
 ```
 
-If the test is successful, restart Nginx:
+If the test is successful, enable and restart Nginx:
 
 ```bash
+sudo systemctl daemon-reload
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 ```
@@ -235,7 +329,9 @@ First, test that the server works locally through nginx:
 ```bash
 # Test direct connection to the application
 curl localhost:3000
+# Should return API information with your customized collection name
 curl localhost:3000/tokens/1
+# Should return metadata for token #1 with your customized values
 
 # Test through nginx
 curl localhost

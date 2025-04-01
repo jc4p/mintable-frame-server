@@ -85,6 +85,72 @@ To verify the server is working correctly:
 }
 ```
 
+## Customizing NFT Metadata
+
+The server generates NFT metadata using the `generateNftMetadata` function in `server.js`. To customize the metadata for your own NFTs, follow these steps:
+
+1. Open `server.js` in your preferred code editor
+2. Locate the `generateNftMetadata` function (around line 6)
+3. Modify the following properties to match your NFT collection:
+
+```javascript
+const generateNftMetadata = (tokenId) => {
+  return {
+    // Change the name format of your NFTs
+    name: `Your NFT Name #${tokenId}`,
+    
+    // Update the description of your NFTs
+    description: "Description of your amazing NFT collection",
+    
+    // IMPORTANT: Change this to the URL of your own image
+    // This should be a publicly accessible URL to your NFT image
+    image: "https://your-domain.com/path/to/your/image.jpg",
+    
+    // Customize attributes for your NFTs
+    attributes: [
+      {
+        trait_type: "Collection",
+        value: "Your Collection Name"
+      },
+      {
+        trait_type: "Token ID",
+        value: tokenId.toString()
+      },
+      // Add more attributes as needed
+      {
+        trait_type: "Rarity",
+        value: "Common"
+      }
+    ]
+  };
+};
+```
+
+4. Also update the root route information to match your collection:
+
+```javascript
+// Find this section in server.js (around line 30)
+app.get('/', () => {
+  return {
+    name: "NFT Metadata API",
+    description: "API for Your Collection Name NFT metadata", // Update this line
+    endpoints: {
+      tokens: "/tokens/{tokenId}"
+    }
+  };
+});
+```
+
+5. Save the file and restart the server with `bun start`
+
+### Image Hosting
+
+For the `image` field, you need to provide a publicly accessible URL to your NFT image. Some options include:
+- Host the image on a service like AWS S3, Cloudflare R2, or Google Cloud Storage
+- Use an image hosting service like Cloudinary, or IPFS
+- Host the image on your own web server
+- For testing, you can use placeholder image services like `https://placehold.co/600x600`
+
 ## License
 
 MIT
